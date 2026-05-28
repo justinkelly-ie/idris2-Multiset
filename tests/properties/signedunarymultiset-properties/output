@@ -1,0 +1,8 @@
+prop_addCommutative: OK, passed 100 tests .
+
+prop_addAssociative: OK, passed 100 tests .
+
+prop_addIdentity: OK, passed 100 tests .
+
+prop_annihilation: OK, passed 100 tests .
+

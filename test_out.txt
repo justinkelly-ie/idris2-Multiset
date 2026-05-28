@@ -1,0 +1,19 @@
+[1mdiff --git a/definitions/labeled-examples/expected b/definitions/labeled-examples/output[m
+[1mindex f3a559b..c72c1ab 100644[m
+[1m--- a/definitions/labeled-examples/expected[m
+[1m+++ b/definitions/labeled-examples/output[m
+[36m@@ -1,3 +1,3 @@[m
+[31m[-----][m[32m{+[+}[m [31m[-Exp-][m[32m{+fata+}[ml[32m{+ ] Err+}[mor[31m[-ing-][m [31m[-Stat-][m[32m{+wh+}[me[31m[-ful-][m[32m{+n+}[m [31m[-Lab-][me[31m[-l-][m[32m{+x+}[me[31m[-d M-][m[32m{+c+}[mu[31m[-l-][mti[32m{+ng sy+}[ms[31m[-e-][mt[31m[- Alg-][me[31m[-br-][m[32m{+m comm+}[ma[32m{+nd.+}[m
+ [31m[-----][m
+[31m[-P-][m[32m{+         Command: "/v+}[mar[32m{+/home/jus+}[mti[31m[-tio-][mn[31m[- Is-][m[32m{+/.l+}[mo[32m{+ca+}[ml[32m{+/st+}[mat[31m[-ion: OK, -][m[32m{+e/+}[mpa[32m{+ck/in+}[ms[31m[-s-][m[32m{+tall/214eb45472+}[me[31m[-d -][m1[32m{+5187e6f932c6820a+}[m0[32m{+f+}[m0[32m{+d5542a18e/idris2/bin/idris2" "--build"+}[m [32m{+"+}[mtest[31m[-s -][m.[31m[-SUCC-][m[32m{+ipkg"+}[m
+[32m{+          +}[mE[31m[-SS-][m[32m{+rror code: 1+}[m
+  ● Add Size passed 0 tests (running)
+[1A[0K  ● Add Size passed 100 tests (running)
+[1A[0K[1mdiff --git a/properties/labeled-properties/expected b/properties/labeled-properties/output[m
+[1mindex 1d9a7f3..c72c1ab 100644[m
+[1m--- a/properties/labeled-properties/expected[m
+[1m+++ b/properties/labeled-properties/output[m
+[36m@@ -1 +1,3 @@[m
+[31m[-p-][m[32m{+[ fatal ] Er+}[mro[31m[-p_-][m[32m{+r when executing system comm+}[ma[32m{+n+}[md[31m[-d-][m[32m{+.+}[m
+[32m{+          +}[mCo[31m[-u-][m[32m{+mma+}[mn[31m[-t-][m[32m{+d+}[m: [31m[-OK, p-][m[32m{+"/var/home/justin/.loc+}[ma[32m{+l/+}[ms[32m{+tate/pack/in+}[ms[32m{+tall/214+}[me[31m[-d -][m[32m{+b45472e15+}[m1[32m{+87e6f932c6820a+}[m0[32m{+f+}[m0[32m{+d5542a18e/idris2/bin/idris2"+}[m [32m{+"--build" "+}[mtest[31m[-s -][m.[32m{+ipkg"+}[m
+[32m{+          Error code: 1+}[m

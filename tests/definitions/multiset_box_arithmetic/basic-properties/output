@@ -1,0 +1,7 @@
+━━━ LMset Properties ━━━
+  ✓ prop_add_comm passed 100 tests.
+  ✓ prop_add_nat_isomorphism passed 100 tests.
+  ✓ prop_mul_nat_isomorphism passed 100 tests.
+  ✓ prop_alpha_pow passed 100 tests.
+  ✓ 4 succeeded.
+SUCCESS

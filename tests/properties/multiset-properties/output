@@ -1,0 +1,12 @@
+prop_sizeAdd: OK, passed 100 tests .
+
+prop_addCommutative: OK, passed 100 tests .
+
+prop_addAssociative: OK, passed 100 tests .
+
+prop_addLeftIdentity: OK, passed 100 tests .
+
+prop_addRightIdentity: OK, passed 100 tests .
+
+prop_sizeSigma: OK, passed 100 tests .
+

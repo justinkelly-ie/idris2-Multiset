@@ -1,0 +1,1 @@
+(parameterize ([optimize-level 3] [compile-file-message #f]) (compile-program "/var/home/justin/Projects/Linear-Physics/idris2-Multiset-Advanced/tests/build/exec/runtests_app/runtests.ss"))
