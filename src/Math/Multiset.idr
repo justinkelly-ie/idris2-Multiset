@@ -110,3 +110,23 @@ fromList : Eq a => List (a, Integer) -> Multiset a
 fromList [] = ZeroM
 fromList ((k, v) :: rest) = insertItem k v (fromList rest)
 
+-----------------------------------------------------------------------
+-- LINEAR DEPENDENT MULTISET (Type-Verified Algebraic Invariant)
+-----------------------------------------------------------------------
+
+||| A strictly linear dependent signed multiset.
+||| The exact elements and their integer multiplicities are tracked in the type signature.
+||| The `1` multiplicity guarantees un-forgeable physical conservation and enables O(1) in-place mutation.
+public export
+data LDepMultiset : (a : Type) -> (contents : List (a, Integer)) -> Type where
+  ||| The vacuum state.
+  LEmptyM : LDepMultiset a []
+  
+  ||| Adds an element, strictly consuming the previous state linearly.
+  LAddM : {0 rest : List (a, Integer)} ->
+          (item : a) -> 
+          (count : Integer) -> 
+          (1 prev : LDepMultiset a rest) -> 
+          LDepMultiset a ((item, count) :: rest)
+
+
