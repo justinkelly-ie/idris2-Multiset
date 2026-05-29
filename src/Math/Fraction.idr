@@ -5,6 +5,7 @@ import Data.Nat
 %default total
 
 ||| A pure algebraic fraction for Rational Trigonometry and exact math.
+||| Not to be used for angular measuremet. Use Spread to measure angles and in SpreadPolynomials. 
 public export
 record Fraction where
   constructor MkFraction
