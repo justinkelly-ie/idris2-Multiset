@@ -79,3 +79,42 @@ export covering S10 : IntPolynumber; S10 = spreadPoly 10
 export covering S11 : IntPolynumber; S11 = spreadPoly 11
 export covering S12 : IntPolynumber; S12 = spreadPoly 12
 export covering S13 : IntPolynumber; S13 = spreadPoly 13
+
+-----------------------------------------------------------------------
+-- INDUCTIVE SYMBOLIC SPREAD POLYNOMIAL EXPRESSION REPRESENTATION
+--
+-- Lets the universe "speak for itself" by modeling the symbolic structure
+-- of Chebyshev recurrence relations at the type/data level.
+-----------------------------------------------------------------------
+
+||| An inductive datatype representing the symbolic recurrence relations of Spread Polynomials.
+||| Each constructor represents a fundamental step in the algebraic generation:
+||| - SZero represents S_0(s) = 0
+||| - SOne represents S_1(s) = s
+||| - SRec represents S_n(s) = 2(1-2s) S_{n-1}(s) - S_{n-2}(s) + 2s
+public export
+data SpreadPolyExpr : Nat -> Type where
+  SZero : SpreadPolyExpr 0
+  SOne  : SpreadPolyExpr 1
+  SRec  : (k : Nat) -> (sn1 : SpreadPolyExpr (S k)) -> (sn2 : SpreadPolyExpr k) -> SpreadPolyExpr (S (S k))
+
+||| Evaluates a symbolic SpreadPolyExpr into a concrete IntPolynumber.
+export covering
+evalSpreadPolyExpr : SpreadPolyExpr n -> IntPolynumber
+evalSpreadPolyExpr SZero = emptyIntPoly
+evalSpreadPolyExpr SOne = sPoly
+evalSpreadPolyExpr (SRec k sn1 sn2) =
+  let p1 = evalSpreadPolyExpr sn1
+      p2 = evalSpreadPolyExpr sn2
+      oneMinus2s = subIntPoly onePoly (scalarMul 2 sPoly)
+      part1 = scalarMul 2 (mulIntPoly oneMinus2s p1)
+      twoS = scalarMul 2 sPoly
+  in annihilateIntPoly (addIntPoly (subIntPoly part1 p2) twoS)
+
+||| Automatically constructs the canonical symbolic SpreadPolyExpr for a given degree.
+export covering
+makeSpreadPolyExpr : (n : Nat) -> SpreadPolyExpr n
+makeSpreadPolyExpr Z = SZero
+makeSpreadPolyExpr (S Z) = SOne
+makeSpreadPolyExpr (S (S k)) = SRec k (makeSpreadPolyExpr (S k)) (makeSpreadPolyExpr k)
+
