@@ -9,7 +9,7 @@ import Data.List
 %default total
 
 ||| Multiply an IntPolynumber by a scalar constant.
-export covering
+export total
 scalarMul : Nat -> IntPolynumber -> IntPolynumber
 scalarMul Z p = emptyIntPoly
 scalarMul (S k) p = addIntPoly p (scalarMul k p)
@@ -28,7 +28,7 @@ onePoly = posTerm 0 0 1
 ||| S_0(s) = 0
 ||| S_1(s) = s
 ||| S_n(s) = 2(1-2s) S_{n-1}(s) - S_{n-2}(s) + 2s
-export covering
+export total
 spreadPoly : Nat -> IntPolynumber
 spreadPoly Z = emptyIntPoly
 spreadPoly (S Z) = sPoly
@@ -50,7 +50,7 @@ spreadPoly (S (S k)) =
 
 ||| Iterative (bottom-up) approach for generating the n-th Spread Polynomial.
 ||| Computes in O(N) time instead of O(2^N) by keeping the last two results.
-export covering
+export total
 memoSpreadPoly : Nat -> IntPolynumber
 memoSpreadPoly Z = emptyIntPoly
 memoSpreadPoly (S Z) = sPoly
@@ -67,19 +67,19 @@ memoSpreadPoly (S (S n)) =
       in fst (step n (sPoly, emptyIntPoly))
 
 ||| Explicit definitions for n=1 to 13 as required by the knowledge base.
-export covering S1 : IntPolynumber; S1 = spreadPoly 1
-export covering S2 : IntPolynumber; S2 = spreadPoly 2
-export covering S3 : IntPolynumber; S3 = spreadPoly 3
-export covering S4 : IntPolynumber; S4 = spreadPoly 4
-export covering S5 : IntPolynumber; S5 = spreadPoly 5
-export covering S6 : IntPolynumber; S6 = spreadPoly 6
-export covering S7 : IntPolynumber; S7 = spreadPoly 7
-export covering S8 : IntPolynumber; S8 = spreadPoly 8
-export covering S9 : IntPolynumber; S9 = spreadPoly 9
-export covering S10 : IntPolynumber; S10 = spreadPoly 10
-export covering S11 : IntPolynumber; S11 = spreadPoly 11
-export covering S12 : IntPolynumber; S12 = spreadPoly 12
-export covering S13 : IntPolynumber; S13 = spreadPoly 13
+export total S1 : IntPolynumber; S1 = spreadPoly 1
+export total S2 : IntPolynumber; S2 = spreadPoly 2
+export total S3 : IntPolynumber; S3 = spreadPoly 3
+export total S4 : IntPolynumber; S4 = spreadPoly 4
+export total S5 : IntPolynumber; S5 = spreadPoly 5
+export total S6 : IntPolynumber; S6 = spreadPoly 6
+export total S7 : IntPolynumber; S7 = spreadPoly 7
+export total S8 : IntPolynumber; S8 = spreadPoly 8
+export total S9 : IntPolynumber; S9 = spreadPoly 9
+export total S10 : IntPolynumber; S10 = spreadPoly 10
+export total S11 : IntPolynumber; S11 = spreadPoly 11
+export total S12 : IntPolynumber; S12 = spreadPoly 12
+export total S13 : IntPolynumber; S13 = spreadPoly 13
 
 -----------------------------------------------------------------------
 -- INDUCTIVE SYMBOLIC SPREAD POLYNOMIAL EXPRESSION REPRESENTATION
@@ -100,7 +100,7 @@ data SpreadPolyExpr : Nat -> Type where
   SRec  : (k : Nat) -> (sn1 : SpreadPolyExpr (S k)) -> (sn2 : SpreadPolyExpr k) -> SpreadPolyExpr (S (S k))
 
 ||| Evaluates a symbolic SpreadPolyExpr into a concrete IntPolynumber.
-export covering
+export total
 evalSpreadPolyExpr : SpreadPolyExpr n -> IntPolynumber
 evalSpreadPolyExpr SZero = emptyIntPoly
 evalSpreadPolyExpr SOne = sPoly
@@ -113,7 +113,7 @@ evalSpreadPolyExpr (SRec k sn1 sn2) =
   in annihilateIntPoly (addIntPoly (subIntPoly part1 p2) twoS)
 
 ||| Automatically constructs the canonical symbolic SpreadPolyExpr for a given degree.
-export covering
+export total
 makeSpreadPolyExpr : (n : Nat) -> SpreadPolyExpr n
 makeSpreadPolyExpr Z = SZero
 makeSpreadPolyExpr (S Z) = SOne
@@ -199,7 +199,7 @@ writeAt Z val (x :: xs) = val :: xs
 writeAt (S k) val [] = 0 :: writeAt k val []
 writeAt (S k) val (x :: xs) = x :: writeAt k val xs
 
-private covering
+private total
 polyDivLoop : List Integer -> List Integer -> List Integer -> Maybe (List Integer)
 polyDivLoop aCoeffs bCoeffs qAcc =
   let aClean = stripTrailingZeroes aCoeffs in
@@ -223,11 +223,11 @@ polyDivLoop aCoeffs bCoeffs qAcc =
                   padSub = subtractTerm ++ replicateNat (minus padLength (length subtractTerm)) 0
                   aNext = zipWith (-) padA padSub
                   qNext = writeAt degDiffNat qCoeff qAcc
-              in polyDivLoop aNext bCoeffs qNext
+              in polyDivLoop (assert_smaller aCoeffs aNext) bCoeffs qNext
             else
               Nothing
 
-private covering
+private total
 polyDivExact : List Integer -> List Integer -> Maybe (List Integer)
 polyDivExact a b =
   let a' = stripTrailingZeroes a
@@ -258,7 +258,7 @@ data PrimitiveFactor : (d : Nat) -> Type where
   MkPrimitive : IntPolynumber -> PrimitiveFactor d
 
 ||| Computes the primitive factors for all divisors of n recursively.
-export covering
+export total
 gohFactorsForDivisors : (n : Nat) -> List (d : Nat ** IntPolynumber)
 gohFactorsForDivisors Z = []
 gohFactorsForDivisors n = go (divisors n) []
@@ -282,7 +282,7 @@ gohFactorsForDivisors n = go (divisors n) []
 
 ||| The Goh Theorem implemented as a Type-Safe Factorisation Split.
 ||| Returns the list of primitive factors Ψ_d(s) indexed by the divisors d of n.
-export covering
+export total
 gohFactorise : (n : Nat) -> List (d : Nat ** PrimitiveFactor d)
 gohFactorise n =
   let rawFactors = gohFactorsForDivisors n

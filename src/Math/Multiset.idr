@@ -168,4 +168,71 @@ public export
 0 LDepMultiset : (a : Type) -> (contents : List (a, Integer)) -> Type
 LDepMultiset = LMultiset
 
+||| Tail-recursive helper to freeze a linear multiset into an unrestricted list.
+||| The accumulator ensures the linear variable `prev` is consumed in a linear context.
+public export
+freezeLDepAcc : (acc : List (a, Integer)) -> (1 m : LMultiset a c) -> List (a, Integer)
+freezeLDepAcc acc LEmptyM = acc
+freezeLDepAcc acc (LAddM item count prev) = freezeLDepAcc ((item, count) :: acc) prev
 
+||| Freezes a type-level linear multiset back into a standard runtime list.
+public export
+freezeLDep : {0 c : List (a, Integer)} -> (1 m : LMultiset a c) -> List (a, Integer)
+freezeLDep m = freezeLDepAcc [] m
+
+||| LUnboxResult: An unrestricted wrapper that preserves the type-level multiset contents.
+public export
+data LUnboxResult : (a : Type) -> List (a, Integer) -> Type where
+  MkLUnboxResult : (x : List (a, Integer)) -> LUnboxResult a x
+
+||| Unboxes a linear LMultiset into an unrestricted list of items and counts,
+||| preserving its type-level index.
+public export
+lunboxLMultiset : {0 c : List (a, Integer)} -> (1 m : LMultiset a c) -> LUnboxResult a c
+lunboxLMultiset LEmptyM = MkLUnboxResult []
+lunboxLMultiset (LAddM item count prev) =
+  let MkLUnboxResult prev_un = lunboxLMultiset prev
+  in MkLUnboxResult ((item, count) :: prev_un)
+
+||| A linear left fold over an LMultiset, consuming it exactly once.
+public export
+lfoldl : {0 contents : List (a, Integer)} ->
+         (acc : b) ->
+         (f : b -> a -> Integer -> b) ->
+         (1 m : LMultiset a contents) ->
+         b
+lfoldl acc f LEmptyM = acc
+lfoldl acc f (LAddM item count prev) = lfoldl (f acc item count) f prev
+
+||| A linear right fold over an LMultiset, consuming it exactly once.
+public export
+lfoldr : {0 contents : List (a, Integer)} ->
+         (f : a -> Integer -> (1 _ : b) -> b) ->
+         (1 acc : b) ->
+         (1 m : LMultiset a contents) ->
+         b
+lfoldr f acc LEmptyM = acc
+lfoldr f acc (LAddM item count prev) = f item count (lfoldr f acc prev)
+
+||| Computes the mapped type index list for lmap.
+public export
+lmapContents : (a -> b) -> List (a, Integer) -> List (b, Integer)
+lmapContents f [] = []
+lmapContents f ((item, count) :: xs) = (f item, count) :: lmapContents f xs
+
+||| A linear map transforming the values of the multiset in-place.
+public export
+lmap : {0 contents : List (a, Integer)} ->
+       (f : a -> b) ->
+       (1 m : LMultiset a contents) ->
+       LMultiset b (lmapContents f contents)
+lmap f LEmptyM = LEmptyM
+lmap f (LAddM item count prev) = LAddM (f item) count (lmap f prev)
+
+||| Destroys / consumes a linear multiset when it is no longer needed.
+public export
+lconsumeLMultiset : {0 contents : List (a, Integer)} ->
+                    (1 m : LMultiset a contents) ->
+                    ()
+lconsumeLMultiset LEmptyM = ()
+lconsumeLMultiset (LAddM item count prev) = lconsumeLMultiset prev
