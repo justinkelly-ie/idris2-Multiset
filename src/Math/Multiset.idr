@@ -236,3 +236,25 @@ lconsumeLMultiset : {0 contents : List (a, Integer)} ->
                     ()
 lconsumeLMultiset LEmptyM = ()
 lconsumeLMultiset (LAddM item count prev) = lconsumeLMultiset prev
+
+||| Linear duplication of a multiset by QTT-compliant copying.
+public export total
+dupMultiset : (1 _ : Multiset a) -> (Multiset a, Multiset a)
+dupMultiset ZeroM = (ZeroM, ZeroM)
+dupMultiset (AddM x c xs) =
+  let (xs1, xs2) = dupMultiset xs
+  in (AddM x c xs1, AddM x c xs2)
+
+||| Linearly consumes a multiset.
+public export total
+consumeMultiset : (1 _ : Multiset a) -> ()
+consumeMultiset ZeroM = ()
+consumeMultiset (AddM x c xs) = consumeMultiset xs
+
+||| Converts a linear Multiset to a list while reconstructing the linear Multiset.
+public export total
+multisetToListL : (1 _ : Multiset a) -> LPair (List (a, Integer)) (Multiset a)
+multisetToListL ZeroM = Builtin.(#) [] ZeroM
+multisetToListL (AddM k v rest) =
+  let (listRest # restM) = multisetToListL rest
+  in Builtin.(#) ((k, v) :: listRest) (AddM k v restM)
