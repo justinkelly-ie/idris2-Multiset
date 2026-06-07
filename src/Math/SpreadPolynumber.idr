@@ -4,6 +4,7 @@ import Data.Linear
 import Math.Interfaces
 import Math.Polynumber
 import Math.IntPolynumber
+import Data.List
 
 %default total
 
@@ -118,3 +119,171 @@ makeSpreadPolyExpr Z = SZero
 makeSpreadPolyExpr (S Z) = SOne
 makeSpreadPolyExpr (S (S k)) = SRec k (makeSpreadPolyExpr (S k)) (makeSpreadPolyExpr k)
 
+-----------------------------------------------------------------------
+-- GOH FACTORISATION
+-----------------------------------------------------------------------
+
+private
+gcdInteger : Integer -> Integer -> Integer
+gcdInteger a 0 = abs a
+gcdInteger a b = gcdInteger b (assert_smaller b (a `mod` b))
+
+private
+totient : Nat -> Nat
+totient Z = Z
+totient (S Z) = S Z
+totient n =
+  let nVal = cast n
+      candidates = [1 .. (nVal - 1)]
+      coprimes = filter (\k => gcdInteger nVal k == 1) candidates
+  in length coprimes
+
+private
+divisors : Nat -> List Nat
+divisors Z = []
+divisors n =
+  let nVal = cast n
+      candidates = [1 .. nVal]
+      divs = filter (\k => nVal `mod` k == 0) candidates
+  in map cast divs
+
+private
+polyDegree : IntPolynumber -> Nat
+polyDegree ZeroM = 0
+polyDegree (AddM (alpha, beta) coeff rest) =
+  let restDeg = polyDegree rest
+  in if coeff == 0 then restDeg else max alpha restDeg
+
+private
+getCoefficient : Nat -> IntPolynumber -> Integer
+getCoefficient power ZeroM = 0
+getCoefficient power (AddM (alpha, beta) coeff rest) =
+  if alpha == power then coeff + getCoefficient power rest
+  else getCoefficient power rest
+
+private
+polyToCoeffs : IntPolynumber -> List Integer
+polyToCoeffs p =
+  let deg = polyDegree p
+  in map (\power => getCoefficient power p) [0 .. deg]
+
+private
+coeffsToPoly : List Integer -> IntPolynumber
+coeffsToPoly coeffs = go 0 coeffs
+  where
+    go : Nat -> List Integer -> IntPolynumber
+    go _ [] = ZeroM
+    go power (c :: cs) =
+      if c == 0 then go (S power) cs
+      else AddM (power, 0) c (go (S power) cs)
+
+private
+stripTrailingZeroes : List Integer -> List Integer
+stripTrailingZeroes = reverse . dropWhile (== 0) . reverse
+
+private
+replicateNat : Nat -> a -> List a
+replicateNat Z _ = []
+replicateNat (S k) x = x :: replicateNat k x
+
+private
+safeLast : a -> List a -> a
+safeLast def [] = def
+safeLast _ [x] = x
+safeLast def (x :: y :: ys) = safeLast def (y :: ys)
+
+private
+writeAt : Nat -> Integer -> List Integer -> List Integer
+writeAt Z val [] = [val]
+writeAt Z val (x :: xs) = val :: xs
+writeAt (S k) val [] = 0 :: writeAt k val []
+writeAt (S k) val (x :: xs) = x :: writeAt k val xs
+
+private covering
+polyDivLoop : List Integer -> List Integer -> List Integer -> Maybe (List Integer)
+polyDivLoop aCoeffs bCoeffs qAcc =
+  let aClean = stripTrailingZeroes aCoeffs in
+  if null aClean then
+    Just qAcc
+  else
+    let degA = cast (length aClean) - 1
+        degB = cast (length bCoeffs) - 1
+    in if degA < degB then
+         Nothing
+       else
+         let leadA = safeLast 0 aClean
+             leadB = safeLast 0 bCoeffs
+         in if leadA `mod` leadB == 0 then
+              let qCoeff = leadA `div` leadB
+                  degDiff = degA - degB
+                  degDiffNat = cast degDiff
+                  subtractTerm = replicateNat degDiffNat 0 ++ map (* qCoeff) bCoeffs
+                  padLength = max (length aClean) (length subtractTerm)
+                  padA = aClean ++ replicateNat (minus padLength (length aClean)) 0
+                  padSub = subtractTerm ++ replicateNat (minus padLength (length subtractTerm)) 0
+                  aNext = zipWith (-) padA padSub
+                  qNext = writeAt degDiffNat qCoeff qAcc
+              in polyDivLoop aNext bCoeffs qNext
+            else
+              Nothing
+
+private covering
+polyDivExact : List Integer -> List Integer -> Maybe (List Integer)
+polyDivExact a b =
+  let a' = stripTrailingZeroes a
+      b' = stripTrailingZeroes b
+  in case b' of
+       [] => Nothing
+       bCoeffs => polyDivLoop a' bCoeffs []
+
+private
+natDivides : Nat -> Nat -> Bool
+natDivides d' d =
+  if d' == 0 then False
+  else (cast d) `mod` (cast d') == 0
+
+private
+isProperDiv : Nat -> (d' : Nat ** IntPolynumber) -> Bool
+isProperDiv d (d' ** _) =
+  if d' `natDivides` d then
+    case compare d' d of
+      LT => True
+      _  => False
+  else
+    False
+
+||| Represents an exact primitive Integer Polynumber factor Ψ_d(x)
+public export
+data PrimitiveFactor : (d : Nat) -> Type where
+  MkPrimitive : IntPolynumber -> PrimitiveFactor d
+
+||| Computes the primitive factors for all divisors of n recursively.
+export covering
+gohFactorsForDivisors : (n : Nat) -> List (d : Nat ** IntPolynumber)
+gohFactorsForDivisors Z = []
+gohFactorsForDivisors n = go (divisors n) []
+  where
+    go : List Nat -> List (d : Nat ** IntPolynumber) -> List (d : Nat ** IntPolynumber)
+    go [] acc = acc
+    go (d :: ds) acc =
+      let properDivs = filter (isProperDiv d) acc
+          prodPoly = case properDivs of
+                       [] => onePoly
+                       ((_ ** p) :: ps) => foldl (\accP, (_ ** nextP) => mulIntPoly accP nextP) p ps
+          sdPoly = spreadPoly d
+          sdCoeffs = polyToCoeffs sdPoly
+          pCoeffs = polyToCoeffs prodPoly
+          psiCoeffs = case polyDivExact sdCoeffs pCoeffs of
+                        Just q => q
+                        Nothing => sdCoeffs
+          psiPoly = coeffsToPoly psiCoeffs
+          newAcc = acc ++ [(d ** psiPoly)]
+      in go ds newAcc
+
+||| The Goh Theorem implemented as a Type-Safe Factorisation Split.
+||| Returns the list of primitive factors Ψ_d(s) indexed by the divisors d of n.
+export covering
+gohFactorise : (n : Nat) -> List (d : Nat ** PrimitiveFactor d)
+gohFactorise n =
+  let rawFactors = gohFactorsForDivisors n
+  in map (\(d ** p) => (d ** MkPrimitive p)) rawFactors

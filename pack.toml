@@ -16,5 +16,5 @@ ipkg = "idris2-QuickCheck.ipkg"
 
 [custom.all.idris2-LUniverse]
 type = "local"
-path = "../idris2-LUniverse"
+path = "../idris2-Universe"
 ipkg = "idris2-LUniverse.ipkg"

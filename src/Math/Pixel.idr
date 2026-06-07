@@ -15,3 +15,11 @@ Eq a => Eq (Pixel a) where
 public export
 Show a => Show (Pixel a) where
   show (MkPixel s t) = "(" ++ show s ++ ", " ++ show t ++ ")"
+
+||| Pixel multiplication in Wildberger's Box Arithmetic.
+||| Iff b == c in [a,b] * [c,d] then the product is [a,d]
+||| Otherwise, the product is Nothing.
+public export
+mulPixel : Eq a => Pixel a -> Pixel a -> Maybe (Pixel a)
+mulPixel (MkPixel a b) (MkPixel c d) =
+  if b == c then Just (MkPixel a d) else Nothing

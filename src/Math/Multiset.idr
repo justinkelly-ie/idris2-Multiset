@@ -111,6 +111,40 @@ fromList [] = ZeroM
 fromList ((k, v) :: rest) = insertItem k v (fromList rest)
 
 -----------------------------------------------------------------------
+-- MAXEL & BOX ARITHMETIC MULTIPLICATION (Dynamic Annihilation Policies)
+-----------------------------------------------------------------------
+
+||| A Maxel is a Multiset of Pixels, representing transition relations.
+public export
+0 Maxel : Type -> Type
+Maxel a = Multiset (Pixel a)
+
+||| Dynamic Maxel multiplication (Transitive Product).
+||| Multiplies two Maxels element-wise. The product of [a,b] and [c,d] is Just [a,d] if b == c, and Nothing otherwise.
+||| The result is a multiset of Maybe (Pixel a) entries, tracking unsuccessful annihilations as Nothing.
+public export
+mulMaxel : Eq a => Maxel a -> Maxel a -> Multiset (Maybe (Pixel a))
+mulMaxel ZeroM _ = ZeroM
+mulMaxel (AddM p1 c1 rest) m2 =
+  addMultiset (mulInner p1 c1 m2) (mulMaxel rest m2)
+  where
+    mulInner : Pixel a -> Integer -> Maxel a -> Multiset (Maybe (Pixel a))
+    mulInner _ _ ZeroM = ZeroM
+    mulInner px cx (AddM py cy ys) =
+      let pProd = mulPixel px py
+          prodCount = cx * cy
+      in insertItem pProd prodCount (mulInner px cx ys)
+
+||| Takes the support of a multiplied Maxel.
+||| Filters out all 'Nothing' entries (representing annihilated or non-transitive transitions),
+||| returning a clean Maxel containing only the valid remaining transitions.
+public export
+supportMaxel : Eq a => Multiset (Maybe (Pixel a)) -> Maxel a
+supportMaxel ZeroM = ZeroM
+supportMaxel (AddM Nothing c rest) = supportMaxel rest
+supportMaxel (AddM (Just px) c rest) = AddM px c (supportMaxel rest)
+
+-----------------------------------------------------------------------
 -- LINEAR DEPENDENT MULTISET (Type-Verified Algebraic Invariant)
 -----------------------------------------------------------------------
 
@@ -118,15 +152,20 @@ fromList ((k, v) :: rest) = insertItem k v (fromList rest)
 ||| The exact elements and their integer multiplicities are tracked in the type signature.
 ||| The `1` multiplicity guarantees un-forgeable physical conservation and enables O(1) in-place mutation.
 public export
-data LDepMultiset : (a : Type) -> (contents : List (a, Integer)) -> Type where
+data LMultiset : (a : Type) -> (contents : List (a, Integer)) -> Type where
   ||| The vacuum state.
-  LEmptyM : LDepMultiset a []
+  LEmptyM : LMultiset a []
   
   ||| Adds an element, strictly consuming the previous state linearly.
   LAddM : {0 rest : List (a, Integer)} ->
           (item : a) -> 
           (count : Integer) -> 
-          (1 prev : LDepMultiset a rest) -> 
-          LDepMultiset a ((item, count) :: rest)
+          (1 prev : LMultiset a rest) -> 
+          LMultiset a ((item, count) :: rest)
+
+||| Legacy compatibility alias for LMultiset.
+public export
+0 LDepMultiset : (a : Type) -> (contents : List (a, Integer)) -> Type
+LDepMultiset = LMultiset
 
 
