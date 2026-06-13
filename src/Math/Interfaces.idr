@@ -36,32 +36,6 @@ interface (LComonoid a) => LEq a where
 -- 2. STANDARD IMPLEMENTATIONS
 -----------------------------------------------------------------------
 
-||| Linear Integer Consumption: Uses a lambda bridge to satisfy QTT.
-public export
-lconsumeInt : (1 _ : Integer) -> ()
-lconsumeInt = believe_me (\x : Integer => ())
-
-||| Linear Integer Duplication: Uses a lambda bridge to satisfy QTT.
-public export
-lcomultInt : (1 _ : Integer) -> LPair Integer Integer
-lcomultInt = believe_me (\x : Integer => Builtin.(#) x x)
-
-||| Linear Integer Equality: Uses a lambda bridge to satisfy QTT.
-public export
-lEqInt : (1 _ : Integer) -> (1 _ : Integer) -> LPair Bool (LPair Integer Integer)
-lEqInt = believe_me (\x : Integer, y : Integer => Builtin.(#) (x == y) (Builtin.(#) x y))
-
-public export
-implementation LConsumable Integer where
-  lconsume = lconsumeInt
-
-public export
-implementation LComonoid Integer where
-  lcomult = lcomultInt
-
-public export
-implementation LEq Integer where
-  lEq = lEqInt
 
 ||| Linear Nat Consumption: Uses structural induction.
 public export
@@ -135,3 +109,13 @@ implementation (LEq a, LEq b) => LEq (LPair a b) where
         Builtin.(#) resR (Builtin.(#) r1' r2') = lEq r1 r2
         res = if resL then resR else case lconsume resR of () => False
     in Builtin.(#) res (Builtin.(#) (l1' # r1') (l2' # r2'))
+
+||| Unrestricted type wrapper for linear QTT values.
+public export
+data Ur : Type -> Type where
+  MkUr : a -> Ur a
+
+||| Converts a non-negative Integer to Nat, defaulting to Z if negative.
+public export
+integerToNat : Integer -> Nat
+integerToNat n = if n < 0 then Z else cast n

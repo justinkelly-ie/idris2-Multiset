@@ -200,21 +200,14 @@ lunboxLMultisetTail m = go [] m
     go acc (LAddM item count prev) = go ((item, count) :: acc) prev
 
 ||| Unboxes a linear LMultiset into an unrestricted list of items and counts,
-||| preserving its type-level index.
-||| (Original recursive version kept as a comment for reference)
--- public export
--- lunboxLMultiset : {0 c : List (a, Integer)} -> (1 m : LMultiset a c) -> LUnboxResult a c
--- lunboxLMultiset LEmptyM = MkLUnboxResult []
--- lunboxLMultiset (LAddM item count prev) =
---   let MkLUnboxResult prev_un = lunboxLMultiset prev
---   in MkLUnboxResult ((item, count) :: prev_un)
-
-||| Tail-recursive implementation of lunboxLMultiset.
+||| preserving its type-level index via structural recursion.
 public export
 lunboxLMultiset : {0 c : List (a, Integer)} -> (1 m : LMultiset a c) -> LUnboxResult a c
-lunboxLMultiset m =
-  let (lst ** MkLUnboxResult _) = lunboxLMultisetTail m
-  in believe_me (MkLUnboxResult (reverse lst))
+lunboxLMultiset LEmptyM = MkLUnboxResult []
+lunboxLMultiset (LAddM item count prev) =
+  let MkLUnboxResult prev_un = lunboxLMultiset prev
+  in MkLUnboxResult ((item, count) :: prev_un)
+
 
 ||| A linear left fold over an LMultiset, consuming it exactly once.
 public export

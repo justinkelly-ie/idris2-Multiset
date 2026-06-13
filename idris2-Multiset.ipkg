@@ -10,3 +10,4 @@ modules = Math.Interfaces, Math.Multiset, Math.Polynumber
        , Math.IntPolynumber
        , Math.SpreadPolynumber
        , Math.Fraction, Math.FractionalEvaluator, Math.Pixel
+       , Math.ExtendedCosmology, Math.BoxInt

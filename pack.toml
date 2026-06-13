@@ -3,18 +3,3 @@ type = "local"
 path = "."
 ipkg = "idris2-Multiset.ipkg"
 test = "idris2-Multiset-tests/idris2-Multiset-test.ipkg"
-
-[custom.all.idris2-ref1]
-type = "local"
-path = "../../Library/Src/idris2-ref1"
-ipkg = "ref1.ipkg"
-
-[custom.all.idris2-QuickCheck]
-type = "local"
-path = "../idris2-QuickCheck"
-ipkg = "idris2-QuickCheck.ipkg"
-
-[custom.all.idris2-LUniverse]
-type = "local"
-path = "../idris2-Universe"
-ipkg = "idris2-LUniverse.ipkg"
