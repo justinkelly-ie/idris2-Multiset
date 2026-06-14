@@ -23,7 +23,7 @@ Show SignedUnit where
 ||| A Box Arithmetic Linear Integer (BoxInt)
 public export
 BoxInt : Type
-BoxInt = Multiset SignedUnit
+BoxInt = Multiset Integer SignedUnit
 
 ||| Normalizes a BoxInt by mutually annihilating Pos and Neg (Dirac Cancellation).
 public export

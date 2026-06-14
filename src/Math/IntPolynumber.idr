@@ -4,15 +4,16 @@ import Data.List
 import Data.Linear
 import Math.Interfaces
 import Math.Polynumber
+import public Math.BoxInt
 import public Math.Multiset
 
 %default covering
 
-||| A highly compressed, high-performance representation of Polynomials with Integer coefficients.
+||| A highly compressed, high-performance representation of Polynomials with BoxInt coefficients.
 ||| Instead of unary MSets, we use a Run-Length Encoded dictionary grouped by (alpha power, beta power).
 public export
 IntPolynumber : Type
-IntPolynumber = Multiset (Nat, Nat)
+IntPolynumber = Multiset BoxInt (Nat, Nat)
 
 ||| The zero IntPolynumber.
 export
@@ -20,7 +21,7 @@ emptyIntPoly : IntPolynumber
 emptyIntPoly = ZeroM
 
 export
-posTerm : Nat -> Nat -> Integer -> IntPolynumber
+posTerm : Nat -> Nat -> BoxInt -> IntPolynumber
 posTerm alpha beta coeff = 
   AddM (alpha, beta) coeff ZeroM
 
@@ -48,7 +49,7 @@ mulIntPoly xs ys =
     mulBasis : (Nat, Nat) -> (Nat, Nat) -> (Nat, Nat)
     mulBasis (a1, b1) (a2, b2) = (a1 + a2, b1 + b2)
     
-    mulInner : (Nat, Nat) -> Integer -> IntPolynumber -> IntPolynumber
+    mulInner : (Nat, Nat) -> BoxInt -> IntPolynumber -> IntPolynumber
     mulInner _ _ ZeroM = ZeroM
     mulInner bx cx (AddM by cy rest) =
       AddM (mulBasis bx by) (cx * cy) (mulInner bx cx rest)

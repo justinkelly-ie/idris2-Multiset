@@ -4,6 +4,7 @@ import Data.Linear
 import Math.Interfaces
 import Math.Polynumber
 import Math.IntPolynumber
+import Math.BoxInt
 import Data.List
 
 %default total
@@ -66,20 +67,22 @@ memoSpreadPoly (S (S n)) =
           in step k (sn, sn1)
       in fst (step n (sPoly, emptyIntPoly))
 
-||| Explicit definitions for n=1 to 13 as required by the knowledge base.
-export total S1 : IntPolynumber; S1 = spreadPoly 1
-export total S2 : IntPolynumber; S2 = spreadPoly 2
-export total S3 : IntPolynumber; S3 = spreadPoly 3
-export total S4 : IntPolynumber; S4 = spreadPoly 4
-export total S5 : IntPolynumber; S5 = spreadPoly 5
-export total S6 : IntPolynumber; S6 = spreadPoly 6
-export total S7 : IntPolynumber; S7 = spreadPoly 7
-export total S8 : IntPolynumber; S8 = spreadPoly 8
-export total S9 : IntPolynumber; S9 = spreadPoly 9
-export total S10 : IntPolynumber; S10 = spreadPoly 10
-export total S11 : IntPolynumber; S11 = spreadPoly 11
-export total S12 : IntPolynumber; S12 = spreadPoly 12
-export total S13 : IntPolynumber; S13 = spreadPoly 13
+||| Explicit definitions for n=1 to 13 as functions to avoid compile-time evaluation hang.
+export total S1 : () -> IntPolynumber; S1 () = memoSpreadPoly 1
+export total S2 : () -> IntPolynumber; S2 () = memoSpreadPoly 2
+export total S3 : () -> IntPolynumber; S3 () = memoSpreadPoly 3
+export total S4 : () -> IntPolynumber; S4 () = memoSpreadPoly 4
+export total S5 : () -> IntPolynumber; S5 () = memoSpreadPoly 5
+export total S6 : () -> IntPolynumber; S6 () = memoSpreadPoly 6
+export total S7 : () -> IntPolynumber; S7 () = memoSpreadPoly 7
+export total S8 : () -> IntPolynumber; S8 () = memoSpreadPoly 8
+export total S9 : () -> IntPolynumber; S9 () = memoSpreadPoly 9
+export total S10 : () -> IntPolynumber; S10 () = memoSpreadPoly 10
+export total S11 : () -> IntPolynumber; S11 () = memoSpreadPoly 11
+export total S12 : () -> IntPolynumber; S12 () = memoSpreadPoly 12
+export total S13 : () -> IntPolynumber; S13 () = memoSpreadPoly 13
+
+
 
 -----------------------------------------------------------------------
 -- INDUCTIVE SYMBOLIC SPREAD POLYNOMIAL EXPRESSION REPRESENTATION
@@ -155,7 +158,7 @@ polyDegree (AddM (alpha, beta) coeff rest) =
   in if coeff == 0 then restDeg else max alpha restDeg
 
 private
-getCoefficient : Nat -> IntPolynumber -> Integer
+getCoefficient : Nat -> IntPolynumber -> BoxInt
 getCoefficient power ZeroM = 0
 getCoefficient power (AddM (alpha, beta) coeff rest) =
   if alpha == power then coeff + getCoefficient power rest
@@ -165,7 +168,11 @@ private
 polyToCoeffs : IntPolynumber -> List Integer
 polyToCoeffs p =
   let deg = polyDegree p
-  in map (\power => getCoefficient power p) [0 .. deg]
+  in map (\power => 
+       let coeffBox = getCoefficient power p
+           (MkUr coeffVal) = boxToInt coeffBox
+       in coeffVal
+     ) [0 .. deg]
 
 private
 coeffsToPoly : List Integer -> IntPolynumber
@@ -175,7 +182,7 @@ coeffsToPoly coeffs = go 0 coeffs
     go _ [] = ZeroM
     go power (c :: cs) =
       if c == 0 then go (S power) cs
-      else AddM (power, 0) c (go (S power) cs)
+      else AddM (power, 0) (fromInteger c) (go (S power) cs)
 
 private
 stripTrailingZeroes : List Integer -> List Integer
@@ -270,7 +277,7 @@ gohFactorsForDivisors n = go (divisors n) []
           prodPoly = case properDivs of
                        [] => onePoly
                        ((_ ** p) :: ps) => foldl (\accP, (_ ** nextP) => mulIntPoly accP nextP) p ps
-          sdPoly = spreadPoly d
+          sdPoly = memoSpreadPoly d
           sdCoeffs = polyToCoeffs sdPoly
           pCoeffs = polyToCoeffs prodPoly
           psiCoeffs = case polyDivExact sdCoeffs pCoeffs of

@@ -2,6 +2,8 @@ module Math.FractionalEvaluator
 
 import Math.Fraction
 import Math.IntPolynumber
+import Math.BoxInt
+import Math.Interfaces
 
 %default total
 
@@ -18,9 +20,9 @@ evaluateIntPoly poly spread =
     evalHelper (AddM (alphaPower, _) coeff rest) =
       let (posAcc, negAcc) = evalHelper rest
           powered = powerFraction spread.value alphaPower
-          mag = cast {to=Nat} (abs coeff)
+          (MkUr coeffVal) = boxToInt coeff
+          mag = Prelude.integerToNat (abs coeffVal)
           scaled = scaleFraction mag powered
-      in if coeff >= 0 
+      in if coeffVal >= 0 
            then (addFraction posAcc scaled, negAcc)
            else (posAcc, addFraction negAcc scaled)
-
