@@ -65,7 +65,7 @@ memoSpreadPoly (S (S n)) =
           let part1 = scalarMul 2 (mulIntPoly oneMinus2s sn1)
               sn = annihilateIntPoly (addIntPoly (subIntPoly part1 sn2) twoS)
           in step k (sn, sn1)
-      in fst (step n (sPoly, emptyIntPoly))
+      in fst (step (S n) (sPoly, emptyIntPoly))
 
 ||| Explicit definitions for n=1 to 13 as functions to avoid compile-time evaluation hang.
 export total S1 : () -> IntPolynumber; S1 () = memoSpreadPoly 1
