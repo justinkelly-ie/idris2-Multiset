@@ -1,15 +1,13 @@
 module Math.Sing1
 
-import Math.Sing
-
 %default total
 
-||| A strictly positive singleton multiset (exactly 1 element, count is non-zero).
-||| Guarantees division-by-zero protection at the type level.
+||| A strictly positive singleton multiset with value 1 = [[]].
+||| Restricts the multiset structure to exactly one element.
 public export
 record Sing1 (c : Type) (a : Type) where
   constructor MkSing1
-  coord : Sing a
+  val : a
   count : c
 
 public export
@@ -18,4 +16,4 @@ public export
 
 public export
 (Show a, Show c) => Show (Sing1 c a) where
-  show (MkSing1 coord count) = show coord ++ " * " ++ show count
+  show (MkSing1 coord count) = "[(" ++ show coord ++ ", " ++ show count ++ ")]"
