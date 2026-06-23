@@ -20,6 +20,17 @@ public export
   show ZeroS = "[]"
   show (OneS x c) = "[(" ++ show x ++ ", " ++ show c ++ ")]"
 
+public export
+(+) : (Eq a, Eq c, Num c) => Sing c a -> Sing c a -> Sing c a
+ZeroS + y = y
+x + ZeroS = x
+(OneS x1 c1) + (OneS x2 c2) =
+  if x1 == x2
+    then let sum = c1 + c2 in
+         if sum == 0 then ZeroS else OneS x1 sum
+    else ZeroS
+
+
 ||| A transition relation between coordinates.
 public export
 record SingRelation (a : Type) where
