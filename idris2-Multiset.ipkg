@@ -12,3 +12,4 @@ modules = Math.Interfaces, Math.Multiset, Math.Polynumber
        , Math.Fraction, Math.FractionalEvaluator, Math.Pixel
        , Math.ExtendedCosmology, Math.BoxInt
        , Math.SignedFraction, Math.Sing, Math.Sing1
+       , Math.Vexel
