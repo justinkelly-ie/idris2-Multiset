@@ -53,8 +53,9 @@ addVexels (token :: xs) ys =
     else -- Identity: No duplicate token found, insert safely into the array
          token :: addVexels xs ys
 
-||| Lifts a standard binary logic Vexel (Row 1) into an open-ended Fractional Vexel (Row 3).
-||| Maps discrete bit states directly to exact numeric multipliers.
+||| Provides a clean interface to step out of the logic rows and enter the Vexels
+||| of Fractions middle layer (original Row 3), converting binary tokens into
+||| prime-encoded numbers ([2] / [1]) that can be scaled up arbitrarily.
 public export
 liftToFractionalVexel : Vexel c a -> FractionalVexel
 liftToFractionalVexel [] = []
