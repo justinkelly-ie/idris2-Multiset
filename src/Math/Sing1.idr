@@ -19,9 +19,9 @@ public export
   show (MkSing1 coord count) = "[(" ++ show coord ++ ", " ++ show count ++ ")]"
 
 public export
-(+) : Eq a => Sing1 c a -> Sing1 c a -> Sing1 c a
+(+) : (Eq a, Num c) => Sing1 c a -> Sing1 c a -> Sing1 c a
 (MkSing1 v1 c1) + (MkSing1 v2 c2) =
   if v1 == v2
-    then MkSing1 v1 c1
+    then MkSing1 v1 (c1 + c2)
     else MkSing1 v1 c1
 
