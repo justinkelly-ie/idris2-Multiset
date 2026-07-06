@@ -2,7 +2,6 @@ module Math.Vexel
 
 import Math.Multiset
 import Math.Sing
-import Math.Sing1
 import Math.Fraction
 import Math.SignedFraction
 import Data.List

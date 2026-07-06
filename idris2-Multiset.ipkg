@@ -11,8 +11,7 @@ modules = Math.Interfaces, Math.Multiset, Math.Polynumber
        , Math.SpreadPolynumber
        , Math.Fraction, Math.FractionalEvaluator, Math.Pixel
        , Math.ExtendedCosmology, Math.BoxInt
-       , Math.SignedFraction, Math.Sing, Math.Sing1
+       , Math.SignedFraction, Math.Sing
        , Math.Vexel, Math.Maxel, Math.LMultiset
        , Math.DepMultiset, Math.DepMaxel, Math.DepVexel, Math.DepSing
        , Math.OnSeq.OnMSet
-
