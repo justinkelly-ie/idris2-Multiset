@@ -1,8 +1,8 @@
-module Math.DepVexel
+module Math.Vexel.DepVexel
 
 import Data.List
-import Math.DepSing
-import Math.Sing
+import Math.Singleton.DepSing
+import Math.Singleton.Sing
 
 %default total
 

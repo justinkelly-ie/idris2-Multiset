@@ -1,7 +1,7 @@
 module Math.DepMultiset
 
 import Math.Multiset
-import Math.DepSing
+import Math.Singleton.DepSing
 
 %default covering
 

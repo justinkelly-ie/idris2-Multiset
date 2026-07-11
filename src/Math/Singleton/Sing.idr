@@ -1,4 +1,4 @@
-module Math.Sing
+module Math.Singleton.Sing
 
 %default total
 

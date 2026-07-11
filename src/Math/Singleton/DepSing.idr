@@ -1,4 +1,4 @@
-module Math.DepSing
+module Math.Singleton.DepSing
 
 %default total
 

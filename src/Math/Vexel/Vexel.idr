@@ -1,7 +1,7 @@
-module Math.Vexel
+module Math.Vexel.Vexel
 
 import Math.Multiset
-import Math.Sing
+import Math.Singleton.Sing
 import Math.Fraction
 import Math.SignedFraction
 import Data.List

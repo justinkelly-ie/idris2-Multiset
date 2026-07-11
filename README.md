@@ -10,7 +10,7 @@
 
 ## Overview
 
-`idris2-Multiset` provides the core mathematical primitives that power the [Nat-Science](https://github.com/justinkelly-ie/Nat-Science) discrete physics ecosystem. 
+`idris2-Multiset` provides the core mathematical primitives that power the [Finite-Science](https://github.com/justinkelly-ie/Finite-Science) discrete physics ecosystem. 
 
 In finitist geometry, continuous space is discarded in favor of discrete integer pixels, and physical coordinates are represented as **Multisets** (bags of elements where duplicate items are allowed and tracked via signed integer counts). 
 

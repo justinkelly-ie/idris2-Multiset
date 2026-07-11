@@ -3,8 +3,8 @@ module Math.OnSeq.OnMSet
 import Math.Multiset
 import Math.Pixel
 import Math.Maxel
-import Math.Vexel
-import Math.Sing
+import Math.Vexel.Vexel
+import Math.Singleton.Sing
 import Math.Fraction
 
 %default total
