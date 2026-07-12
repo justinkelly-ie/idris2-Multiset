@@ -1,60 +1,58 @@
 module Math.Singleton.Sing
 
+import Math.Multiset
+
 %default total
 
-||| A singleton multiset with possible values 0 = [] or 1 = [[]].
-||| Restricts the multiset structure to at most one element.
+-----------------------------------------------------------------------
+-- SING
+--
+-- A singleton multiset: a multiset containing exactly one element,
+-- where that element is itself a Multiset.
+--
+-- Concretely, Sing c a = { m : Multiset c a }.
+-- The single element is a Multiset c a value; Sing wraps it.
+-----------------------------------------------------------------------
+
+||| A singleton multiset holding exactly one element, which is itself a Multiset.
+||| `Sing c a` represents { m } where m : Multiset c a.
 public export
-data Sing : (c : Type) -> (a : Type) -> Type where
-  ZeroS : Sing c a
-  OneS : a -> c -> Sing c a
+record Sing (c : Type) (a : Type) where
+  constructor MkSing
+  element : Multiset c a
 
 public export
-(Eq a, Eq c) => Eq (Sing c a) where
-  ZeroS == ZeroS = True
-  (OneS x1 c1) == (OneS x2 c2) = x1 == x2 && c1 == c2
-  _ == _ = False
+(Eq a, Eq c, Neg c, Num c) => Eq (Sing c a) where
+  (MkSing m1) == (MkSing m2) = m1 == m2
 
 public export
 (Show a, Show c) => Show (Sing c a) where
-  show ZeroS = "[]"
-  show (OneS x c) = "[(" ++ show x ++ ", " ++ show c ++ ")]"
+  show (MkSing m) = "[" ++ show m ++ "]"
 
+-----------------------------------------------------------------------
+-- SING OPERATIONS
+-----------------------------------------------------------------------
+
+||| The singleton containing the empty multiset: { [] }.
 public export
-(+) : (Eq a, Eq c, Num c) => Sing c a -> Sing c a -> Sing c a
-ZeroS + y = y
-x + ZeroS = x
-(OneS x1 c1) + (OneS x2 c2) =
-  if x1 == x2
-    then let sum = c1 + c2 in
-         if sum == 0 then ZeroS else OneS x1 sum
-    else ZeroS
+emptySing : Sing c a
+emptySing = MkSing ZeroM
 
-
-||| A strictly positive singleton multiset with value 1 = [[]].
-||| Restricts the multiset structure to exactly one element.
+||| Embed a Multiset as a Sing.
 public export
-record Sing1 (c : Type) (a : Type) where
-  constructor MkSing1
-  val : a
-  count : c
+toSing : Multiset c a -> Sing c a
+toSing m = MkSing m
 
+||| Extract the contained Multiset from a Sing.
 public export
-(Eq a, Eq c) => Eq (Sing1 c a) where
-  (MkSing1 coord1 count1) == (MkSing1 coord2 count2) = coord1 == coord2 && count1 == count2
+fromSing : Sing c a -> Multiset c a
+fromSing (MkSing m) = m
 
-public export
-(Show a, Show c) => Show (Sing1 c a) where
-  show (MkSing1 coord count) = "[(" ++ show coord ++ ", " ++ show count ++ ")]"
-
-namespace Sing1Ops
-  public export
-  (+) : (Eq a, Num c) => Sing1 c a -> Sing1 c a -> Sing1 c a
-  (MkSing1 v1 c1) + (MkSing1 v2 c2) =
-    if v1 == v2
-      then MkSing1 v1 (c1 + c2)
-      else MkSing1 v1 c1
-
+-----------------------------------------------------------------------
+-- TRANSITION RELATION
+--
+-- Preserved from the original: a relation between two coordinates.
+-----------------------------------------------------------------------
 
 ||| A transition relation between coordinates.
 public export
