@@ -15,3 +15,4 @@ modules = Math.Interfaces, Math.Multiset, Math.Polynumber
        , Math.Vexel.Vexel, Math.Vexel.Byte, Math.Vexel.Transformation, Math.Maxel, Math.LMultiset
        , Math.DepMultiset, Math.DepMaxel, Math.Vexel.DepVexel, Math.Singleton.DepSing
        , Math.OnSeq.OnMSet, Math.Singleton.Bit, Math.Singleton.Bit2, Math.Singleton.SingFraction, Math.Singleton.SBFMset
+       , Math.Singleton.DepSingWeighted

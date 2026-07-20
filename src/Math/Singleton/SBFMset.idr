@@ -37,9 +37,9 @@ Y = 1
 -- 2. STATIC SBFMSET METRIC TEMPLATES
 -----------------------------------------------------------------------
 
--- Row 1: Logical Parity Form [ ((Wire, Wire), 1) ] over BVal
+-- Row 1: Logical Parity Form [ ((Wire, Wire), 1) ] over Bit
 public export
-row1SBF : Multiset BVal (Pixel Blue Coord1D)
+row1SBF : Multiset Bit (Pixel Blue Coord1D)
 row1SBF = AddM (MkPixel Wire Wire) One ZeroM
 
 -- Row 7: Euclidean Blue Form [ ((X, X), 1), ((Y, Y), 1) ] over BoxInt

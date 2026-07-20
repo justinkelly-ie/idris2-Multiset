@@ -91,15 +91,15 @@ prop_distributive : Property
 prop_distributive = forAll {a = (Bit, Bit, Bit)} {prop = Bool} arbitrary (MkFn (\(x, y, z) =>
   (x * (y + z)) == ((x * y) + (x * z))))
 
-||| Negation is the identity: -x = x.
-prop_negIdentity : Property
-prop_negIdentity = forAll {a = Bit} {prop = Bool} arbitrary (MkFn (\x =>
-  negate x == x))
+||| Negation is involutive: -(-x) = x.
+prop_negInvolutive : Property
+prop_negInvolutive = forAll {a = Bit} {prop = Bool} arbitrary (MkFn (\x =>
+  negate (negate x) == x))
 
-||| Subtraction equals addition in B₂: x - y = x + y.
-prop_subIsAdd : Property
-prop_subIsAdd = forAll {a = (Bit, Bit)} {prop = Bool} arbitrary (MkFn (\(x, y) =>
-  (x - y) == (x + y)))
+||| Subtraction in Algebra of Boole: x - y = x + 1 + y.
+prop_subIsComplementAdd : Property
+prop_subIsComplementAdd = forAll {a = (Bit, Bit)} {prop = Bool} arbitrary (MkFn (\(x, y) =>
+  (x - y) == (x + One + y)))
 
 --------------------------------------------------------------------------------
 -- CONVERSION ROUND-TRIPS
@@ -192,11 +192,11 @@ main = do
   let r12 = quickCheck prop_distributive
   putStrLn $ "prop_distributive: " ++ r12.msg
 
-  let r13 = quickCheck prop_negIdentity
-  putStrLn $ "prop_negIdentity: " ++ r13.msg
+  let r13 = quickCheck prop_negInvolutive
+  putStrLn $ "prop_negInvolutive: " ++ r13.msg
 
-  let r14 = quickCheck prop_subIsAdd
-  putStrLn $ "prop_subIsAdd: " ++ r14.msg
+  let r14 = quickCheck prop_subIsComplementAdd
+  putStrLn $ "prop_subIsComplementAdd: " ++ r14.msg
 
   let r15 = quickCheck prop_natRoundTrip
   putStrLn $ "prop_natRoundTrip: " ++ r15.msg

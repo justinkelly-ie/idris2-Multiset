@@ -9,35 +9,45 @@ import Math.Singleton.Sing
 %default total
 
 -----------------------------------------------------------------------
--- BIT — THE BIFIED B₂ FIELD
+-- BIT — THE BIFIED B₂ FIELD (Algebra of Boole)
 --
--- B₂ = { 0, 1 } represented directly as multisets (Wildberger bification):
+-- Bit = Sing (Multiset BoxInt Void)
 --
---   0  =  []    — the empty multiset
---   1  =  [[]]  — the multiset containing one empty multiset
+-- A Bit IS a singleton wrapping exactly one Multiset BoxInt Void value.
+-- The two canonical B₂ values (Wildberger bification):
 --
--- A Bit IS a Sing BoxInt (Multiset BoxInt Void):
--- a singleton multiset { m } whose one element m ∈ { [], [[]] }.
+--   Zero = MkSing ZeroM                 — singleton containing []
+--   One  = MkSing (AddM ZeroM 1 ZeroM)  — singleton containing [[]]
 --
 -- Von Neumann ordinal reading:
---   0 := {}         the empty set
---   1 := { {} }     the set containing the empty set
+--   0 := {}    — the empty set
+--   1 := {{}}  — the set containing the empty set
+--
+-- Algebra of Boole semantics (NOT Boolean algebra):
+--
+--   negate x = 1 + x   (complement: ¬x = 1 + x)
+--   x - y   = x + ¬y   (subtraction via complement)
+--
+--   Consequence: negate Zero = One, negate One = Zero.
+--   This differs from GF(2) where negate x = x.
 -----------------------------------------------------------------------
 
-||| A Bit is a Sing whose single Multiset element is either
-||| [] (zero) or [[]] (one).
+||| A Bit is a singleton containing one Multiset BoxInt (Multiset BoxInt Void) value.
+||| The element type is itself a Multiset, enabling the von Neumann bification:
+|||   Zero = MkSing ZeroM                  — the empty multiset
+|||   One  = MkSing (AddM ZeroM 1 ZeroM)   — the multiset containing [] once
 public export
 Bit : Type
-Bit = Sing BoxInt (Multiset BoxInt Void)
+Bit = Sing (Multiset BoxInt (Multiset BoxInt Void))
 
-||| The zero bit: the singleton { [] }.
+||| The zero bit: singleton containing the empty multiset [].
 ||| Represents 0 in B₂.
 public export
 Zero : Bit
 Zero = MkSing ZeroM
 
-||| The one bit: the singleton { [[]] }.
-||| Represents 1 in B₂.
+||| The one bit: singleton containing the multiset {[] → 1}.
+||| Represents 1 in B₂: the multiset whose single element is ZeroM.
 public export
 One : Bit
 One = MkSing (AddM ZeroM 1 ZeroM)
@@ -53,8 +63,8 @@ isZero _              = False
 
 public export
 isOne : Bit -> Bool
-isOne (MkSing (AddM ZeroM _ ZeroM)) = True
-isOne _                              = False
+isOne (MkSing (AddM _ _ _)) = True   -- any AddM is One (ZeroM is the only other value)
+isOne _                     = False
 
 -----------------------------------------------------------------------
 -- DISPLAY
@@ -65,30 +75,56 @@ Show Bit where
   show b = if isOne b then "1" else "0"
 
 -----------------------------------------------------------------------
--- BIT ARITHMETIC (B₂ field, mod 2)
+-- ORD
+-- (Eq Bit is provided by the Sing instance: Eq a => Eq (Sing a))
 -----------------------------------------------------------------------
 
-||| Addition in B₂: exclusive or (XOR).
-||| 0 + 0 = 0,  0 + 1 = 1,  1 + 0 = 1,  1 + 1 = 0
+public export
+Ord Bit where
+  compare x y =
+    case (isOne x, isOne y) of
+      (False, False) => EQ
+      (False, True)  => LT
+      (True,  False) => GT
+      (True,  True)  => EQ
+
+-----------------------------------------------------------------------
+-- BIT ARITHMETIC (Algebra of Boole)
+--
+-- Addition — XOR (mod 2):
+--   0+0=0  0+1=1  1+0=1  1+1=0
+--
+-- Multiplication — AND:
+--   0*0=0  0*1=0  1*0=0  1*1=1
+--
+-- Negation (Algebra of Boole complement):
+--   ¬x = 1 + x  =>  ¬0 = 1, ¬1 = 0
+--
+-- Subtraction:
+--   x - y = x + ¬y = x + (1 + y)
+-----------------------------------------------------------------------
+
+||| Addition in B₂: XOR.
+||| 0+0=0  0+1=1  1+0=1  1+1=0
 public export
 addBit : Bit -> Bit -> Bit
-addBit b1 b2 =
-  case (isOne b1, isOne b2) of
-    (False, False) => Zero
-    (False, True)  => One
-    (True,  False) => One
-    (True,  True)  => Zero
+addBit (MkSing ZeroM) y             = y
+addBit x             (MkSing ZeroM) = x
+addBit _             _              = Zero
 
-||| Multiplication in B₂: logical AND.
-||| 0 * 0 = 0,  0 * 1 = 0,  1 * 0 = 0,  1 * 1 = 1
+||| Multiplication in B₂: AND.
+||| 0*0=0  0*1=0  1*0=0  1*1=1
 public export
 mulBit : Bit -> Bit -> Bit
-mulBit b1 b2 = if isOne b1 && isOne b2 then One else Zero
+mulBit (MkSing ZeroM) _             = Zero
+mulBit _             (MkSing ZeroM) = Zero
+mulBit x             _              = x
 
-||| Negation in B₂ is the identity: -x = x.
+||| Algebra of Boole complement: ¬x = 1 + x.
+||| negate Zero = One,  negate One = Zero.
 public export
 negBit : Bit -> Bit
-negBit x = x
+negBit x = addBit One x
 
 -----------------------------------------------------------------------
 -- NUM / NEG INSTANCES
@@ -96,27 +132,17 @@ negBit x = x
 
 public export
 Num Bit where
-  (+)         = addBit
-  (*)         = mulBit
+  (+)           = addBit
+  (*)           = mulBit
   fromInteger n = if mod n 2 == 0 then Zero else One
 
+||| Neg instance uses the Algebra of Boole complement.
+||| negate x = 1 + x   (NOT the GF(2) identity negate x = x)
+||| x - y    = x + (1 + y)
 public export
 Neg Bit where
-  negate = negBit
-  (-) x y = addBit x y
-
------------------------------------------------------------------------
--- ORD
------------------------------------------------------------------------
-
-public export
-Ord Bit where
-  compare b1 b2 =
-    case (isOne b1, isOne b2) of
-      (False, False) => EQ
-      (False, True)  => LT
-      (True,  False) => GT
-      (True,  True)  => EQ
+  negate  = negBit
+  (-) x y = addBit x (negBit y)
 
 -----------------------------------------------------------------------
 -- CONVERSION
@@ -158,20 +184,18 @@ Abs Bit where
 
 public export
 LConsumable Bit where
-  lconsume (MkSing ZeroM)               = ()
-  lconsume (MkSing (AddM ZeroM _ ZeroM)) = ()
-  lconsume (MkSing _)                   = ()
+  lconsume (MkSing _) = ()
 
 public export
 LComonoid Bit where
-  lcomult (MkSing ZeroM)               = Builtin.(#) Zero Zero
-  lcomult (MkSing (AddM ZeroM n ZeroM)) = Builtin.(#) One  One
-  lcomult (MkSing m)                   = Builtin.(#) (MkSing m) (MkSing m)
+  lcomult (MkSing ZeroM) = Builtin.(#) Zero Zero
+  lcomult (MkSing m)     = Builtin.(#) (MkSing m) (MkSing m)
 
 public export
 LEq Bit where
-  lEq (MkSing ZeroM)                (MkSing ZeroM)               = Builtin.(#) True  (Builtin.(#) Zero Zero)
-  lEq (MkSing (AddM ZeroM n ZeroM)) (MkSing (AddM ZeroM m ZeroM)) = Builtin.(#) True  (Builtin.(#) One  One)
-  lEq (MkSing ZeroM)                (MkSing (AddM ZeroM n ZeroM)) = Builtin.(#) False (Builtin.(#) Zero One)
-  lEq (MkSing (AddM ZeroM n ZeroM)) (MkSing ZeroM)               = Builtin.(#) False (Builtin.(#) One  Zero)
-  lEq b1                            b2                             = Builtin.(#) False (Builtin.(#) b1   b2)
+  lEq (MkSing ZeroM) (MkSing ZeroM) = Builtin.(#) True  (Builtin.(#) Zero Zero)
+  lEq (MkSing ZeroM) y              = Builtin.(#) False (Builtin.(#) Zero y)
+  lEq x              (MkSing ZeroM) = Builtin.(#) False (Builtin.(#) x    Zero)
+  lEq x              y              = Builtin.(#) True  (Builtin.(#) x    y)
+
+

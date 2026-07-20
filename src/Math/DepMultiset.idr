@@ -1,7 +1,7 @@
 module Math.DepMultiset
 
 import Math.Multiset
-import Math.Singleton.DepSing
+import Math.Singleton.DepSingWeighted
 
 %default covering
 
@@ -121,10 +121,10 @@ depMap1 f (DepAddM1 item count prev) = DepAddM1 (f item) count (depMap1 f prev)
 
 ||| Maps a dependent singleton to a dependent multiset of size 1.
 public export
-depSingToMultiset : DepSing c a x weight -> DepMultiset c a (AddM x weight ZeroM)
-depSingToMultiset (MkDepSing x weight) = DepAddM x weight DepEmptyM
+depSingToMultiset : DepSingWeighted c a x weight -> DepMultiset c a (AddM x weight ZeroM)
+depSingToMultiset (MkDepSingWeighted x weight) = DepAddM x weight DepEmptyM
 
 ||| Maps a dependent multiset of size 1 back to a dependent singleton.
 public export
-depMultisetToSing : DepMultiset c a (AddM x weight ZeroM) -> DepSing c a x weight
-depMultisetToSing (DepAddM x weight DepEmptyM) = MkDepSing x weight
+depMultisetToSing : DepMultiset c a (AddM x weight ZeroM) -> DepSingWeighted c a x weight
+depMultisetToSing (DepAddM x weight DepEmptyM) = MkDepSingWeighted x weight

@@ -29,7 +29,7 @@ Show state => Show (LogicState state) where
 ||| Natively mirrors the Maxel (multiset of Pixels) in spatial geometry.
 public export
 TransformationMSet : (state : Type) -> Type
-TransformationMSet state = Multiset BVal (SingRelation (LogicState state))
+TransformationMSet state = Multiset Bit (SingRelation (LogicState state))
 
 
 ||| Transitive relation multiplication (Composition).
@@ -46,11 +46,11 @@ mulTransformation ZeroM _ = ZeroM
 mulTransformation (AddM r1 c1 rest) m2 =
   annihilateMultiset (addMultiset (mulInner r1 c1 m2) (mulTransformation rest m2))
   where
-    mulInner : SingRelation (LogicState state) -> BVal -> TransformationMSet state -> TransformationMSet state
+    mulInner : SingRelation (LogicState state) -> Bit -> TransformationMSet state -> TransformationMSet state
     mulInner _ _ ZeroM = ZeroM
     mulInner r1 c1 (AddM r2 c2 ys) =
       case mulRelation r1 r2 of
-        Just rProd => insertItem rProd (mulBVal c1 c2) (mulInner r1 c1 ys)
+        Just rProd => insertItem rProd (c1 * c2) (mulInner r1 c1 ys)
         Nothing    => mulInner r1 c1 ys
 
 ||| Num instance enforcing the Algebra of Boole (+ and *) over Logic Relations.
@@ -89,42 +89,43 @@ xorGate : Eq state => LogicState state -> LogicState state -> LogicState state -
 xorGate in1 in2 output =
   wire in1 output + wire in2 output
 
+||| Evaluate the binary flag for a state in the weight-free Sing.
+public export
+evaluateSingState : Eq state => Sing (LogicState state) -> LogicState state -> Bit
+evaluateSingState (MkSing k) s = if k == s then One else Zero
+
 ||| Apply the Transformation MSet to an input state to compute the output state.
 ||| Uses the new Sing-based modulo-2 parity addition to collapse duplicate targets.
 public export
-applyTransformation : Eq state => Sing BVal state -> TransformationMSet state -> Sing BVal state
-applyTransformation _ ZeroM = ZeroS
-applyTransformation inputState (AddM (MkSingRelation src tgt) w rest) =
-  let current = case tgt of
-                  ConstState _ => ZeroS
-                  VarState v   =>
-                    case src of
-                      ConstState _ =>
-                        if not (isOne w) then ZeroS else OneS v w
-                      VarState u   =>
-                        let c = evaluateSingState inputState u in
-                        let val = mulBVal c w in
-                        if not (isOne val) then ZeroS else OneS v val
-      accumulatedRest = applyTransformation inputState rest
-  in current + accumulatedRest
+applyTransformation : Eq state => Sing (LogicState state) -> TransformationMSet state -> Vexel Bit (LogicState state)
+applyTransformation _ ZeroM = ZeroM
+applyTransformation (MkSing k) (AddM (MkSingRelation src tgt) w rest) =
+  let current = if k == src && isOne w
+                  then case tgt of
+                         ConstState _ => ZeroM
+                         VarState v   => AddM (MkSing (VarState v)) One ZeroM
+                  else ZeroM
+      accumulatedRest = applyTransformation (MkSing k) rest
+  in addVexels current accumulatedRest
 
 -----------------------------------------------------------------------
 -- VEXEL IMPLEMENTATION FOR BOOLE LOGIC (ROW 1 & 2)
 -----------------------------------------------------------------------
 
-||| Wrap a single bit-gate singleton multiset into a Byte vector.
+||| Wrap a single state into a Byte vector.
 public export
-toByte : SingBitGateMset state -> Byte state
-toByte ZeroS = []
-toByte (OneS s w) = [OneS s w]
+toByte : Sing (LogicState state) -> Byte (LogicState state)
+toByte s = AddM s One ZeroM
 
 ||| Apply a Transformation MSet (Maxel) to a Byte vector input.
 ||| Since Byte is a list of singletons, we map applyTransformation over the elements
 ||| and accumulate the result using addByte.
 public export
-applyTransformationVexel : Eq state => Byte state -> TransformationMSet state -> Byte state
-applyTransformationVexel [] _ = []
-applyTransformationVexel (x :: xs) trans =
-  let res = applyTransformation x trans
-      tailRes = applyTransformationVexel xs trans
-  in addByte (toByte res) tailRes
+applyTransformationVexel : Eq state => Byte (LogicState state) -> TransformationMSet state -> Byte (LogicState state)
+applyTransformationVexel ZeroM _ = ZeroM
+applyTransformationVexel (AddM x w xs) trans =
+  if isOne w
+     then let res = applyTransformation x trans
+              tailRes = applyTransformationVexel xs trans
+          in addByte res tailRes
+     else applyTransformationVexel xs trans

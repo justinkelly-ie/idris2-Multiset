@@ -27,13 +27,17 @@ import Math.DepMultiset
 -----------------------------------------------------------------------
 
 ||| The type-level Multiset index for the Zero2 element.
+||| ZeroIdx = { [] → 1 } : Multiset BoxInt (Multiset BoxInt (Multiset BoxInt Void))
+||| Stores the Bit-level Zero element: ZeroM : Multiset BoxInt (Multiset BoxInt Void)
 public export
-ZeroIdx : Multiset BoxInt (Multiset BoxInt Void)
+ZeroIdx : Multiset BoxInt (Multiset BoxInt (Multiset BoxInt Void))
 ZeroIdx = AddM ZeroM 1 ZeroM
 
 ||| The type-level Multiset index for the One2 element.
+||| OneIdx = { [[]] → 1 } : Multiset BoxInt (Multiset BoxInt (Multiset BoxInt Void))
+||| Stores the Bit-level One element: AddM ZeroM 1 ZeroM : Multiset BoxInt (Multiset BoxInt Void)
 public export
-OneIdx : Multiset BoxInt (Multiset BoxInt Void)
+OneIdx : Multiset BoxInt (Multiset BoxInt (Multiset BoxInt Void))
 OneIdx = AddM (AddM ZeroM 1 ZeroM) 1 ZeroM
 
 -----------------------------------------------------------------------
@@ -41,15 +45,15 @@ OneIdx = AddM (AddM ZeroM 1 ZeroM) 1 ZeroM
 -----------------------------------------------------------------------
 
 ||| The zero element of B₂ as a DepMultiset of size 1.
-||| Element: ZeroM = [] (the empty multiset).
+||| Element: ZeroM = [] (the Bit-level Zero: empty Multiset BoxInt (Multiset BoxInt Void)).
 public export
-Zero2 : DepMultiset BoxInt (Multiset BoxInt Void) ZeroIdx
+Zero2 : DepMultiset BoxInt (Multiset BoxInt (Multiset BoxInt Void)) ZeroIdx
 Zero2 = DepAddM ZeroM 1 DepEmptyM
 
 ||| The one element of B₂ as a DepMultiset of size 1.
-||| Element: AddM ZeroM 1 ZeroM = [[]] (multiset containing []).
+||| Element: AddM ZeroM 1 ZeroM = [[]] (the Bit-level One: Multiset containing ZeroM).
 public export
-One2 : DepMultiset BoxInt (Multiset BoxInt Void) OneIdx
+One2 : DepMultiset BoxInt (Multiset BoxInt (Multiset BoxInt Void)) OneIdx
 One2 = DepAddM (AddM ZeroM 1 ZeroM) 1 DepEmptyM
 
 -----------------------------------------------------------------------
@@ -65,9 +69,9 @@ One2 = DepAddM (AddM ZeroM 1 ZeroM) 1 DepEmptyM
 public export
 data Bit2 : Type where
   ||| 0 ∈ B₂ — DepMultiset { [] }.
-  Bit2Zero : DepMultiset BoxInt (Multiset BoxInt Void) ZeroIdx -> Bit2
+  Bit2Zero : DepMultiset BoxInt (Multiset BoxInt (Multiset BoxInt Void)) ZeroIdx -> Bit2
   ||| 1 ∈ B₂ — DepMultiset { [[]] }.
-  Bit2One  : DepMultiset BoxInt (Multiset BoxInt Void) OneIdx  -> Bit2
+  Bit2One  : DepMultiset BoxInt (Multiset BoxInt (Multiset BoxInt Void)) OneIdx  -> Bit2
 
 ||| The zero Bit2.
 public export
@@ -137,10 +141,11 @@ mulBit2 : Bit2 -> Bit2 -> Bit2
 mulBit2 (Bit2One _) (Bit2One _) = b2One
 mulBit2 _           _           = b2Zero
 
-||| Negation in B₂ is the identity: -x = x.
+||| Algebra of Boole complement: ¬x = 1 + x.
+||| negate Zero2 = One2, negate One2 = Zero2.
 public export
 negBit2 : Bit2 -> Bit2
-negBit2 x = x
+negBit2 x = addBit2 b2One x
 
 -----------------------------------------------------------------------
 -- NUM / NEG INSTANCES
@@ -155,7 +160,7 @@ Num Bit2 where
 public export
 Neg Bit2 where
   negate = negBit2
-  (-) x y = addBit2 x y
+  (-) x y = addBit2 x (negBit2 y)
 
 -----------------------------------------------------------------------
 -- CONVERSION
@@ -202,7 +207,7 @@ Abs Bit2 where
 ||| Freeze the canonical DepMultiset element out of a Bit2.
 ||| Returns the runtime Multiset that the DepMultiset tracks.
 public export
-freezeBit2 : Bit2 -> Multiset BoxInt (Multiset BoxInt Void)
+freezeBit2 : Bit2 -> Multiset BoxInt (Multiset BoxInt (Multiset BoxInt Void))
 freezeBit2 (Bit2Zero dm) = freezeDep dm
 freezeBit2 (Bit2One  dm) = freezeDep dm
 

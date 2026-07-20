@@ -3,31 +3,34 @@ module Math.Vexel.DepVexel
 import Data.List
 import Math.Singleton.DepSing
 import Math.Singleton.Sing
+import Math.Singleton.Bit
+import Math.Vexel.Vexel
+import Math.Multiset
 
 %default total
 
-||| A dependently typed Vexel where coordinates and weights are tracked at the type level.
+||| A dependently typed Vexel.
 public export
-data DepVexel : (c : Type) -> (a : Type) -> List (a, c) -> Type where
-  ||| The empty Vexel state.
-  DepEmptyV : DepVexel c a []
-  
+data DepVexel : (a : Type) -> List a -> Type where
+  DepEmptyV : DepVexel a []
+
   ||| Adds a dependent singleton to the Vexel.
-  DepAddV : {x : a} -> {weight : c} ->
-            DepSing c a x weight ->
-            {rest : List (a, c)} ->
-            DepVexel c a rest ->
-            DepVexel c a ((x, weight) :: rest)
+  DepAddV : {x : a} ->
+            DepSing a x ->
+            {rest : List a} ->
+            DepVexel a rest ->
+            DepVexel a (x :: rest)
 
-||| Freezes a dependently typed Vexel back into a standard runtime list of coordinate-weight pairs.
 public export
-freezeDepVexel : {0 contents : List (a, c)} -> DepVexel c a contents -> List (a, c)
+freezeDepVexel : {0 contents : List a} -> DepVexel a contents -> List a
 freezeDepVexel DepEmptyV = []
-freezeDepVexel (DepAddV (MkDepSing x weight) prev) = (x, weight) :: freezeDepVexel prev
+freezeDepVexel (DepAddV (MkDepSing x) prev) = x :: freezeDepVexel prev
 
-||| Maps a runtime Vexel (list of singletons) to a type-level association list of active coordinate-weight pairs.
+||| Maps a runtime Vexel (multiset of singletons) to a type-level list of active coordinates.
 public export
-0 vexelToMSet : List (Sing c a) -> List (a, c)
-vexelToMSet [] = []
-vexelToMSet (ZeroS :: xs) = vexelToMSet xs
-vexelToMSet (OneS x weight :: xs) = (x, weight) :: vexelToMSet xs
+vexelToMSet : Vexel Bit a -> List a
+vexelToMSet ZeroM = []
+vexelToMSet (AddM (MkSing x) w xs) =
+  if isOne w
+     then x :: vexelToMSet xs
+     else vexelToMSet xs

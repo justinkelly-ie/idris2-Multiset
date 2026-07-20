@@ -1,60 +1,63 @@
 module Math.Singleton.Sing
 
-import Math.Multiset
-
 %default total
 
 -----------------------------------------------------------------------
 -- SING
 --
--- A singleton multiset: a multiset containing exactly one element,
--- where that element is itself a Multiset.
+-- A singleton: a transparent wrapper for exactly one element of type `a`.
 --
--- Concretely, Sing c a = { m : Multiset c a }.
--- The single element is a Multiset c a value; Sing wraps it.
+-- Unlike Maybe or the old ZeroS/OneS form, Sing always holds an element.
+-- It encodes WHICH value is present, not WHETHER a value is present.
+--
+-- The element type `a` determines the domain; Sing adds no restriction.
+-- B₂ restriction (to { ZeroM, [[]] }) is enforced at the Bit level.
 -----------------------------------------------------------------------
 
-||| A singleton multiset holding exactly one element, which is itself a Multiset.
-||| `Sing c a` represents { m } where m : Multiset c a.
+||| A singleton holding exactly one element of type `a`.
 public export
-record Sing (c : Type) (a : Type) where
-  constructor MkSing
-  element : Multiset c a
+data Sing : (a : Type) -> Type where
+  MkSing : a -> Sing a
 
 public export
-(Eq a, Eq c, Neg c, Num c) => Eq (Sing c a) where
-  (MkSing m1) == (MkSing m2) = m1 == m2
+Eq a => Eq (Sing a) where
+  (MkSing x) == (MkSing y) = x == y
 
 public export
-(Show a, Show c) => Show (Sing c a) where
-  show (MkSing m) = "[" ++ show m ++ "]"
+Show a => Show (Sing a) where
+  show (MkSing x) = "{" ++ show x ++ "}"
 
 -----------------------------------------------------------------------
 -- SING OPERATIONS
 -----------------------------------------------------------------------
 
-||| The singleton containing the empty multiset: { [] }.
+||| Wrap a value in a singleton.
 public export
-emptySing : Sing c a
-emptySing = MkSing ZeroM
+toSing : a -> Sing a
+toSing = MkSing
 
-||| Embed a Multiset as a Sing.
+||| Extract the element from a singleton.
 public export
-toSing : Multiset c a -> Sing c a
-toSing m = MkSing m
+fromSing : Sing a -> a
+fromSing (MkSing x) = x
 
-||| Extract the contained Multiset from a Sing.
+-----------------------------------------------------------------------
+-- SING1
+--
+-- A strictly-present singleton: exactly one element.
+-- Preserved as an alias for Sing — Sing is always strictly present.
+-----------------------------------------------------------------------
+
+||| A guaranteed-present singleton. Alias for Sing.
 public export
-fromSing : Sing c a -> Multiset c a
-fromSing (MkSing m) = m
+Sing1 : Type -> Type
+Sing1 = Sing
 
 -----------------------------------------------------------------------
 -- TRANSITION RELATION
---
--- Preserved from the original: a relation between two coordinates.
 -----------------------------------------------------------------------
 
-||| A transition relation between coordinates.
+||| A transition relation between two coordinates.
 public export
 record SingRelation (a : Type) where
   constructor MkSingRelation

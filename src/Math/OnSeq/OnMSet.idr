@@ -6,6 +6,7 @@ import Math.Maxel
 import Math.Vexel.Vexel
 import Math.Singleton.Sing
 import Math.Fraction
+import Math.Singleton.Bit
 
 %default total
 
@@ -128,23 +129,19 @@ OnVexel c a = OnSeq (Vexel c a)
 
 ||| Pointwise addition of two on-sequences of Vexels.
 public export
-addOnVexel : (Eq c, Eq a) => OnVexel c a -> OnVexel c a -> OnVexel c a
+addOnVexel : (Eq a, Num c, Eq c) => OnVexel c a -> OnVexel c a -> OnVexel c a
 addOnVexel = zipWith addVexels
 
 ||| Lifts an on-sequence of binary singleton Vexels to fractional rational Vexels.
 public export
-liftOnVexel : OnVexel c a -> OnSeq FractionalVexel
-liftOnVexel = map liftToFractionalVexel
+liftOnVexel : Eq a => OnVexel Bit a -> OnSeq FractionalVexel
+liftOnVexel = OnMSet.map liftToFractionalVexel
 
 ||| On-sequence of singletons.
 public export
-0 OnSing : (c : Type) -> (a : Type) -> Type
-OnSing c a = OnSeq (Sing c a)
+0 OnSing : (a : Type) -> Type
+OnSing a = OnSeq (Sing a)
 
-||| Pointwise addition of two on-sequences of singletons.
-public export
-addOnSing : (Eq a, Eq c, Num c) => OnSing c a -> OnSing c a -> OnSing c a
-addOnSing = zipWith (+)
 
 
 ||| Lookup the multiplicity count of an element in a multiset.
