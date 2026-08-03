@@ -112,6 +112,18 @@ public export
 Abs BoxInt where
   abs = boxAbs
 
+||| Discrete ceiling log2 directly over BoxInt.
+public export
+boxLog2 : BoxInt -> BoxInt
+boxLog2 xs =
+  let (MkUr val) = boxToInt (boxAbs xs)
+  in intToBoxInt (calcLog2 val)
+  where
+    calcLog2 : Integer -> Integer
+    calcLog2 n =
+      if n <= 1 then 0
+      else 1 + assert_total (calcLog2 (div n 2))
+
 -----------------------------------------------------------------------
 -- LINEAR INSTANCES (Structural, no believe_me)
 -----------------------------------------------------------------------
