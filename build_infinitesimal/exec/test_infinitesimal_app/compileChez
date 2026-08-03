@@ -1,0 +1,1 @@
+(parameterize ([optimize-level 3] [compile-file-message #f]) (compile-program "/var/home/justin/Projects/idris2-Multiset/build_infinitesimal/exec/test_infinitesimal_app/test_infinitesimal.ss"))

@@ -1,0 +1,1 @@
+(parameterize ([optimize-level 3] [compile-file-message #f]) (compile-program "/var/home/justin/Projects/idris2-Multiset/build_dual_complex/exec/test_dual_complex_app/test_dual_complex.ss"))
